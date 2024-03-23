@@ -26,7 +26,7 @@ func NewUserHandler(logger *slog.Logger, service user_service.UserService) trans
 }
 
 const (
-	signUp = "register"
+	signUp = "/register"
 )
 
 func (handler *userHandler) Register(router *mux.Router) {

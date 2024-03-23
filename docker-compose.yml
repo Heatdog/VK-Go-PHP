@@ -17,7 +17,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123
-      - POSTGRES_DB=films_database
+      - POSTGRES_DB=marketplace_database
     networks:
       - ps
     volumes:

@@ -7,13 +7,28 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/Heatdog/VK-Go-PHP/docs"
+
 	"github.com/Heatdog/VK-Go-PHP/internal/config"
+	user_postgre "github.com/Heatdog/VK-Go-PHP/internal/repository/user/postgre"
 	user_service "github.com/Heatdog/VK-Go-PHP/internal/service/user"
 	user_handler "github.com/Heatdog/VK-Go-PHP/internal/transport/user"
 	"github.com/Heatdog/VK-Go-PHP/pkg/client/postgre"
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
+// swag init -g internal/app/app.go
+
+// @title Маркетплейс
+// @description API server for Маркетплейс
+
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinitions.apiKey ApiKeyAuth
+// @in header
+// @name Authorization
 func App() {
 	opt := &slog.HandlerOptions{
 		AddSource: true,
@@ -37,9 +52,18 @@ func App() {
 	router := mux.NewRouter()
 
 	logger.Info("register user handler")
-	userService := user_service.NewUserService(logger)
+	userRepo := user_postgre.NewUserPostgreRepository(dbClient, logger)
+	userService := user_service.NewUserService(logger, userRepo)
 	userHandler := user_handler.NewUserHandler(logger, userService)
 	userHandler.Register(router)
+
+	logger.Info("adding swagger documentation")
+	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+		httpSwagger.DeepLinking(true),
+		httpSwagger.DocExpansion("none"),
+		httpSwagger.DomID("swagger-ui"),
+	)).Methods(http.MethodGet)
 
 	host := fmt.Sprintf("%s:%s", cfg.Server.IP, cfg.Server.Port)
 	logger.Info("listen tcp", slog.String("host", host))

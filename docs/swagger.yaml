@@ -1,0 +1,66 @@
+basePath: /
+definitions:
+  transport.RespWriter:
+    properties:
+      message:
+        type: string
+    type: object
+  transport.SignUpResponse:
+    properties:
+      id:
+        type: string
+      login:
+        type: string
+    type: object
+  user_model.UserLogin:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API server for Маркетплейс
+  title: Маркетплейс
+paths:
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Регистрациия в системе. Минимальная длина логина и пароля - 3 символа.
+        Логин должен быть уникальным.
+      operationId: sign-up
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user_model.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/transport.SignUpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/transport.RespWriter'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/transport.RespWriter'
+      summary: SignUp
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
