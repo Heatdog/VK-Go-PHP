@@ -25,13 +25,42 @@ info:
   description: API server for Маркетплейс
   title: Маркетплейс
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Вход в систему. Указывается логин и пароль
+      operationId: sign-in
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user_model.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/transport.RespWriter'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/transport.RespWriter'
+      summary: SignIn
+      tags:
+      - auth
   /register:
     post:
       consumes:
       - application/json
       description: |-
         Регистрациия в системе. Минимальная длина логина и пароля - 3 символа.
-        Логин должен быть уникальным.
+        Максимальная длина - 50 символов. Логин должен быть уникальным.
       operationId: sign-up
       parameters:
       - description: user info

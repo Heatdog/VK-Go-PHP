@@ -11,6 +11,7 @@ import (
 
 	"github.com/Heatdog/VK-Go-PHP/internal/config"
 	user_postgre "github.com/Heatdog/VK-Go-PHP/internal/repository/user/postgre"
+	token_service "github.com/Heatdog/VK-Go-PHP/internal/service/token"
 	user_service "github.com/Heatdog/VK-Go-PHP/internal/service/user"
 	user_handler "github.com/Heatdog/VK-Go-PHP/internal/transport/user"
 	"github.com/Heatdog/VK-Go-PHP/pkg/client/postgre"
@@ -51,9 +52,12 @@ func App() {
 
 	router := mux.NewRouter()
 
+	logger.Info("reпister token service")
+	tokenService := token_service.NewTokenService(logger, cfg.PasswordKey)
+
 	logger.Info("register user handler")
 	userRepo := user_postgre.NewUserPostgreRepository(dbClient, logger)
-	userService := user_service.NewUserService(logger, userRepo)
+	userService := user_service.NewUserService(logger, userRepo, tokenService)
 	userHandler := user_handler.NewUserHandler(logger, userService)
 	userHandler.Register(router)
 

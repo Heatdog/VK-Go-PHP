@@ -22,7 +22,7 @@ func NewUserPostgreRepository(dbClient client.Client, logger *slog.Logger) user_
 	}
 }
 
-func (repo *userRepositoryPostgre) SignUp(ctx context.Context, user *user_model.UserLogin) (uuid.UUID, error) {
+func (repo *userRepositoryPostgre) InsertUser(ctx context.Context, user *user_model.UserLogin) (uuid.UUID, error) {
 	repo.logger.Info("insert user in repo")
 	q := `
 			INSERT INTO users (login, password)
@@ -42,4 +42,24 @@ func (repo *userRepositoryPostgre) SignUp(ctx context.Context, user *user_model.
 
 	repo.logger.Info("successful user insert", slog.String("id", id.String()))
 	return id, nil
+}
+
+func (repo *userRepositoryPostgre) FindUser(ctx context.Context, login string) (*user_model.User, error) {
+	repo.logger.Info("find user in repo")
+	q := `
+			SELECT id, login, password
+			FROM users
+			WHERE login = $1
+	`
+	repo.logger.Debug(q)
+	row := repo.dbClient.QueryRow(ctx, q, login)
+
+	var res user_model.User
+
+	if err := row.Scan(&res.ID, &res.Login, &res.Password); err != nil {
+		repo.logger.Error("SQL error", slog.Any("error", err))
+		return nil, err
+	}
+
+	return &res, nil
 }

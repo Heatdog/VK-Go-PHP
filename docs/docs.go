@@ -16,9 +16,53 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/login": {
+            "post": {
+                "description": "Вход в систему. Указывается логин и пароль",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "SignIn",
+                "operationId": "sign-in",
+                "parameters": [
+                    {
+                        "description": "user info",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user_model.UserLogin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/transport.RespWriter"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/transport.RespWriter"
+                        }
+                    }
+                }
+            }
+        },
         "/register": {
             "post": {
-                "description": "Регистрациия в системе. Минимальная длина логина и пароля - 3 символа.\nЛогин должен быть уникальным.",
+                "description": "Регистрациия в системе. Минимальная длина логина и пароля - 3 символа.\nМаксимальная длина - 50 символов. Логин должен быть уникальным.",
                 "consumes": [
                     "application/json"
                 ],

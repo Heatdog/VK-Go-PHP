@@ -8,5 +8,6 @@ import (
 )
 
 type UserRepository interface {
-	SignUp(ctx context.Context, user *user_model.UserLogin) (id uuid.UUID, err error)
+	InsertUser(ctx context.Context, user *user_model.UserLogin) (id uuid.UUID, err error)
+	FindUser(ctx context.Context, login string) (*user_model.User, error)
 }
