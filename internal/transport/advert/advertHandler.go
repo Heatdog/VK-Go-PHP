@@ -36,8 +36,8 @@ const (
 )
 
 func (handler *advertHandler) Register(router *mux.Router) {
-	router.HandleFunc(add, handler.middleware.Auth(handler.addAdvert)).Methods(http.MethodPost)
-	router.HandleFunc(get, handler.getAdverts).Methods(http.MethodGet)
+	router.HandleFunc(add, handler.middleware.Auth(true, handler.addAdvert)).Methods(http.MethodPost)
+	router.HandleFunc(get, handler.middleware.Auth(false, handler.getAdverts)).Methods(http.MethodGet)
 }
 
 // Добавление объявления
@@ -116,10 +116,16 @@ func (handler *advertHandler) addAdvert(w http.ResponseWriter, r *http.Request) 
 // @Summary getAdverts
 // @Tags advert
 // @Description Получение списка объявлений. Возможность сортировки по дате и цене, также их направление.
-// @Description Возможность фильтрации по цене с мин и макс значениями
+// @Description Возможность фильтрации по цене с мин и макс значениями.
+// @Description Сортировка задается параметрами URL: order и dir.
+// @Description Если не задать эти параметры, то будет сортировка по убыванию времени
 // @ID get-adverts
 // @Accept json
 // @Produce json
+// @Param order query string false "type of order"
+// @Param dir query string false "asc or desc"
+// @Param min query string false "min price"
+// @Param max query string false "max price"
 // @Success 200 {object} []advert_model.Advert Список объявлений
 // @Failure 400 {object} transport.RespWriter Некооректные входные данные
 // @Failure 500 {object} transport.RespWriter Внутренняя ошибка сервера
@@ -127,4 +133,19 @@ func (handler *advertHandler) addAdvert(w http.ResponseWriter, r *http.Request) 
 func (handler *advertHandler) getAdverts(w http.ResponseWriter, r *http.Request) {
 	handler.logger.Info("get advert handler")
 
+	values := r.URL.Query()
+	queryParams, err := advert_model.ValidQuery(advert_model.QueryParams{
+		Sort:     values.Get("order"),
+		SortDir:  values.Get("dir"),
+		MinPrice: values.Get("min"),
+		MaxPrice: values.Get("max"),
+	})
+
+	if err != nil {
+		handler.logger.Warn(err.Error())
+		transport.NewRespWriter(w, err.Error(), http.StatusBadRequest, handler.logger)
+		return
+	}
+
+	handler.logger.Debug("get adverts", slog.Any("query", queryParams))
 }

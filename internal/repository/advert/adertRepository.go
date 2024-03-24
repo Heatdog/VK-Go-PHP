@@ -10,4 +10,6 @@ import (
 type AdvertRepository interface {
 	AddAdvert(ctx context.Context, advert *advert_model.AdvertInput,
 		userID uuid.UUID) (id uuid.UUID, err error)
+
+	GetAdverts(ctx context.Context, params advert_model.QueryParams) ([]advert_model.Advert, error)
 }

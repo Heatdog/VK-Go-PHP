@@ -1,10 +1,12 @@
 package advert_model
 
 import (
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -75,4 +77,48 @@ func MakeAdvert(in *AdvertInput, id uuid.UUID, userID uuid.UUID) *Advert {
 		UserID:  userID,
 		Own:     true,
 	}
+}
+
+type QueryParams struct {
+	Sort     string
+	SortDir  string
+	MinPrice string `valid:"int"`
+	MaxPrice string `valid:"int"`
+}
+
+func ValidQuery(params QueryParams) (QueryParams, error) {
+	if params.Sort != "price" {
+		params.Sort = "date"
+	}
+	if params.SortDir != "asc" {
+		params.SortDir = "desc"
+	}
+
+	if params.MaxPrice == "" {
+		params.MaxPrice = strconv.Itoa(math.MaxInt)
+	}
+
+	if params.MinPrice == "" {
+		params.MinPrice = strconv.Itoa(0)
+	}
+
+	if _, err := govalidator.ValidateStruct(params); err != nil {
+		return QueryParams{}, err
+	}
+
+	minPrice, err := strconv.Atoi(params.MinPrice)
+	if err != nil {
+		return QueryParams{}, err
+	}
+
+	maxPrice, err := strconv.Atoi(params.MaxPrice)
+	if err != nil {
+		return QueryParams{}, err
+	}
+
+	if minPrice < 0 || maxPrice < 0 || minPrice < maxPrice {
+		return QueryParams{}, fmt.Errorf("invalid price interval")
+	}
+
+	return params, nil
 }

@@ -2,6 +2,7 @@ package advert_postgre
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -47,4 +48,18 @@ func (repo *advertRepositoryPostgre) AddAdvert(ctx context.Context, advert *adve
 
 	repo.logger.Info("successful advert add", slog.String("id", id.String()))
 	return id, nil
+}
+
+func (repo *advertRepositoryPostgre) GetAdverts(ctx context.Context,
+	params advert_model.QueryParams) ([]advert_model.Advert, error) {
+
+	repo.logger.Info("get films from repo")
+	q := fmt.Sprintf(`
+		SELECT a.id, a.title, a.body, a.image_adr, a.price, u.login
+		FROM adverts a
+		LEFT JOIN users u ON a.users_id = u.id
+		WHERE a.price >= %s AND a.price <= %s
+		ORDER BY %s %s
+
+	`, params.MinPrice, params.MaxPrice, params.Sort, params.SortDir)
 }
