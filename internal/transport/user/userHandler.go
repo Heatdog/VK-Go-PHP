@@ -43,7 +43,7 @@ func (handler *userHandler) Register(router *mux.Router) {
 // @ID sign-up
 // @Accept json
 // @Produce json
-// @Param input body user_model.UserLogin true "user info"
+// @Param input body user_model.UserLogin true "информация о пользователе"
 // @Success 201 {object} transport.SignUpResponse Успешная регистрация
 // @Failure 400 {object} transport.RespWriter Некооректные входные данные
 // @Failure 500 {object} transport.RespWriter Внутренняя ошибка сервера
@@ -111,7 +111,7 @@ func (handler *userHandler) signUp(w http.ResponseWriter, r *http.Request) {
 // @ID sign-in
 // @Accept json
 // @Produce json
-// @Param input body user_model.UserLogin true "user info"
+// @Param input body user_model.UserLogin true "информация о пользователе"
 // @Success 200 {object} nil Успешная авторизация
 // @Failure 400 {object} transport.RespWriter Некооректные входные данные
 // @Failure 500 {object} transport.RespWriter Внутренняя ошибка сервера

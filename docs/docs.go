@@ -16,6 +16,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/advert/add": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Добавление объявления в систему. Добавлять могут только авторизованные пользователи.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advert"
+                ],
+                "summary": "AddAdvert",
+                "operationId": "add-advert",
+                "parameters": [
+                    {
+                        "description": "advert fields",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/advert_model.AdvertInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/advert_model.Advert"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/transport.RespWriter"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/transport.RespWriter"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Вход в систему. Указывается логин и пароль",
@@ -109,6 +161,46 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "advert_model.Advert": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "advert_model.AdvertInput": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "transport.RespWriter": {
             "type": "object",
             "properties": {
