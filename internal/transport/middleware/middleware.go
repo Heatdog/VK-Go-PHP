@@ -26,9 +26,10 @@ func NewMiddleware(logger *slog.Logger, key string) *Middleware {
 
 func (mid *Middleware) Auth(onlyAuthorize bool, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		mid.logger.Debug("verify access token")
+		header := r.Header.Get("Authorization")
 
-		header := r.Header.Get("authorization")
+		mid.logger.Debug("verify access token", slog.String("header", header))
+
 		if header == "" {
 			mid.logger.Debug("header is empty")
 			if onlyAuthorize {
@@ -37,12 +38,13 @@ func (mid *Middleware) Auth(onlyAuthorize bool, next http.HandlerFunc) http.Hand
 			}
 
 			next(w, r)
+			return
 		}
 
 		mid.logger.Debug("got access token", slog.String("token", header))
 		fields, err := mid.verifyTokenHeader(header)
 		if err != nil {
-			mid.logger.Warn("auth header err", slog.Any("err", err))
+			mid.logger.Debug("auth header err", slog.Any("err", err))
 
 			if onlyAuthorize {
 				transport.NewRespWriter(w, err.Error(), http.StatusUnauthorized, mid.logger)
@@ -50,11 +52,12 @@ func (mid *Middleware) Auth(onlyAuthorize bool, next http.HandlerFunc) http.Hand
 			}
 
 			next(w, r)
+			return
 		}
 
 		id, err := uuid.Parse(fields.ID)
 		if err != nil {
-			mid.logger.Warn("auth header err", slog.Any("err", err))
+			mid.logger.Debug("auth header err", slog.Any("err", err))
 
 			if onlyAuthorize {
 				transport.NewRespWriter(w, err.Error(), http.StatusUnauthorized, mid.logger)
@@ -62,6 +65,7 @@ func (mid *Middleware) Auth(onlyAuthorize bool, next http.HandlerFunc) http.Hand
 			}
 
 			next(w, r)
+			return
 		}
 
 		mid.logger.Debug("set user id in context", slog.Any("id", id))

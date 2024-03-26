@@ -23,7 +23,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-// swag init -g internal/app/app.go
+// swag init --pd -g internal/app/app.go
 
 // @title Маркетплейс
 // @description API server for Маркетплейс

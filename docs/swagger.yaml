@@ -12,8 +12,6 @@ definitions:
         type: integer
       title:
         type: string
-      user_id:
-        type: string
     type: object
   advert_model.AdvertInput:
     properties:
@@ -24,6 +22,25 @@ definitions:
       price:
         type: integer
       title:
+        type: string
+    type: object
+  advert_model.AdvertWithOwner:
+    properties:
+      body:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      own:
+        type: boolean
+      price:
+        type: integer
+      title:
+        type: string
+      user_id:
+        type: string
+      user_login:
         type: string
     type: object
   transport.RespWriter:
@@ -59,7 +76,7 @@ paths:
         пользователи.
       operationId: add-advert
       parameters:
-      - description: advert fields
+      - description: поля объявления
         in: body
         name: input
         required: true
@@ -76,6 +93,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/transport.RespWriter'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/transport.RespWriter'
         "500":
           description: Internal Server Error
           schema:
@@ -85,6 +106,57 @@ paths:
       summary: AddAdvert
       tags:
       - advert
+  /advert/get:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Получение списка объявлений. Возможность сортировки по дате и цене, также их направление.
+        Возможность фильтрации по цене с мин и макс значениями.
+        Сортировка задается параметрами URL: order и dir.
+        Если не задать эти параметры, то будет сортировка по убыванию времени
+      operationId: get-adverts
+      parameters:
+      - description: type of order
+        in: query
+        name: order
+        type: string
+      - description: asc or desc
+        in: query
+        name: dir
+        type: string
+      - description: min price
+        in: query
+        name: min
+        type: string
+      - description: max price
+        in: query
+        name: max
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/advert_model.AdvertWithOwner'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/transport.RespWriter'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/transport.RespWriter'
+      security:
+      - ApiKeyAuth: []
+      summary: getAdverts
+      tags:
+      - advert
   /login:
     post:
       consumes:
@@ -92,7 +164,7 @@ paths:
       description: Вход в систему. Указывается логин и пароль
       operationId: sign-in
       parameters:
-      - description: user info
+      - description: информация о пользователе
         in: body
         name: input
         required: true
@@ -123,7 +195,7 @@ paths:
         Максимальная длина - 50 символов. Логин должен быть уникальным.
       operationId: sign-up
       parameters:
-      - description: user info
+      - description: информация о пользователе
         in: body
         name: input
         required: true

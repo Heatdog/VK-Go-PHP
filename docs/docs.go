@@ -37,7 +37,7 @@ const docTemplate = `{
                 "operationId": "add-advert",
                 "parameters": [
                     {
-                        "description": "advert fields",
+                        "description": "поля объявления",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -51,6 +51,85 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/advert_model.Advert"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/transport.RespWriter"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/transport.RespWriter"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/transport.RespWriter"
+                        }
+                    }
+                }
+            }
+        },
+        "/advert/get": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Получение списка объявлений. Возможность сортировки по дате и цене, также их направление.\nВозможность фильтрации по цене с мин и макс значениями.\nСортировка задается параметрами URL: order и dir.\nЕсли не задать эти параметры, то будет сортировка по убыванию времени",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advert"
+                ],
+                "summary": "getAdverts",
+                "operationId": "get-adverts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "type of order",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "asc or desc",
+                        "name": "dir",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "min price",
+                        "name": "min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "max price",
+                        "name": "max",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/advert_model.AdvertWithOwner"
+                                }
+                            }
                         }
                     },
                     "400": {
@@ -84,7 +163,7 @@ const docTemplate = `{
                 "operationId": "sign-in",
                 "parameters": [
                     {
-                        "description": "user info",
+                        "description": "информация о пользователе",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -128,7 +207,7 @@ const docTemplate = `{
                 "operationId": "sign-up",
                 "parameters": [
                     {
-                        "description": "user info",
+                        "description": "информация о пользователе",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -178,9 +257,6 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         },
@@ -197,6 +273,35 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "advert_model.AdvertWithOwner": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "own": {
+                    "type": "boolean"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_login": {
                     "type": "string"
                 }
             }

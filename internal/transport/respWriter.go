@@ -31,5 +31,5 @@ func NewRespWriter(w http.ResponseWriter, text string, statusCode int, logger *s
 		logger.Error("writing in respone failed", slog.Any("error", err))
 		return
 	}
-	logger.Info("repsonse write", slog.String("message", text), slog.Int("status code", statusCode))
+	logger.Info("repsonse write", slog.String("msg", text), slog.Int("status code", statusCode))
 }

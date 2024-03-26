@@ -154,7 +154,7 @@ func (handler *userHandler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("authorization", "Bearer "+token)
+	w.Header().Set("Authorization", "Bearer "+token)
 	w.WriteHeader(http.StatusOK)
 	handler.logger.Info("successful auth", slog.String("user", user.Login))
 }

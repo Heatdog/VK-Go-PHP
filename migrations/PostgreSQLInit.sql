@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS users(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     login VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(250) NOT NULL,
-    CHECK (LENGTH(login) > 3 and LENGTH(password) > 3)
+    CHECK (LENGTH(login) >= 3 and LENGTH(password) >= 3)
 );
 
 CREATE TABLE IF NOT EXISTS adverts(
@@ -15,3 +15,5 @@ CREATE TABLE IF NOT EXISTS adverts(
     date_time DATE NOT NULL DEFAULT now(),
     CHECK (LENGTH(title) > 2 and LENGTH(body) > 2 and price > 0) 
 );
+
+CREATE INDEX adverts_idx ON adverts(price);

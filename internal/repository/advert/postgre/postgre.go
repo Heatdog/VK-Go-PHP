@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	advert_model "github.com/Heatdog/VK-Go-PHP/internal/models/advert"
 	advert_repository "github.com/Heatdog/VK-Go-PHP/internal/repository/advert"
@@ -39,9 +38,8 @@ func (repo *advertRepositoryPostgre) AddAdvert(ctx context.Context, advert *adve
 	row := repo.dbClient.QueryRow(ctx, q, advert.Title, advert.Body, advert.Price, advert.ImgAddr, userID)
 
 	var id uuid.UUID
-	var dateTime time.Time
 
-	if err := row.Scan(&id, &dateTime); err != nil {
+	if err := row.Scan(&id); err != nil {
 		repo.logger.Error("SQL error", slog.Any("error", err))
 		return uuid.Nil, err
 	}
@@ -51,15 +49,42 @@ func (repo *advertRepositoryPostgre) AddAdvert(ctx context.Context, advert *adve
 }
 
 func (repo *advertRepositoryPostgre) GetAdverts(ctx context.Context,
-	params advert_model.QueryParams) ([]advert_model.Advert, error) {
+	params advert_model.QueryParams) ([]advert_model.AdvertWithOwner, error) {
 
 	repo.logger.Info("get films from repo")
 	q := fmt.Sprintf(`
-		SELECT a.id, a.title, a.body, a.image_adr, a.price, u.login
+		SELECT a.id, a.title, a.body, a.image_adr, a.price, u.login, u.id
 		FROM adverts a
-		LEFT JOIN users u ON a.users_id = u.id
-		WHERE a.price >= %s AND a.price <= %s
+		LEFT JOIN users u ON a.user_id = u.id
+		WHERE a.price BETWEEN $1 AND $2
 		ORDER BY %s %s
 
-	`, params.MinPrice, params.MaxPrice, params.Sort, params.SortDir)
+	`, params.Sort, params.SortDir)
+
+	repo.logger.Debug("SQL query", slog.String("query", q))
+	repo.logger.Debug("price params", slog.String("min", params.MinPrice), slog.String("max", params.MaxPrice))
+	rows, err := repo.dbClient.Query(ctx, q, params.MinPrice, params.MaxPrice)
+
+	if err != nil {
+		repo.logger.Error("SQL error", slog.Any("err", err))
+		return nil, err
+	}
+
+	var res []advert_model.AdvertWithOwner
+	for rows.Next() {
+
+		var advert advert_model.AdvertWithOwner
+		if err := rows.Scan(&advert.ID, &advert.Title, &advert.Body, &advert.ImgAddr, &advert.Price,
+			&advert.UserLogin, &advert.UserID); err != nil {
+
+			repo.logger.Error(err.Error())
+			return nil, err
+		}
+
+		repo.logger.Debug("append", slog.Any("row", advert))
+		res = append(res, advert)
+	}
+
+	repo.logger.Info("successful slect")
+	return res, nil
 }

@@ -97,7 +97,7 @@ func (handler *advertHandler) addAdvert(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	advertResp := advert_model.MakeAdvert(&advert, id, userID)
+	advertResp := advert_model.MakeAdvert(&advert, id)
 	handler.logger.Debug("marshal response", slog.Any("advert response", advertResp))
 	resp, err := json.Marshal(advertResp)
 
@@ -107,14 +107,15 @@ func (handler *advertHandler) addAdvert(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.Write(resp)
 	w.WriteHeader(http.StatusCreated)
+	w.Write(resp)
 	handler.logger.Info("successfull advert add", slog.Any("advert", advertResp))
 }
 
 // Получение объявлений
 // @Summary getAdverts
 // @Tags advert
+// @Security ApiKeyAuth
 // @Description Получение списка объявлений. Возможность сортировки по дате и цене, также их направление.
 // @Description Возможность фильтрации по цене с мин и макс значениями.
 // @Description Сортировка задается параметрами URL: order и dir.
@@ -126,7 +127,7 @@ func (handler *advertHandler) addAdvert(w http.ResponseWriter, r *http.Request) 
 // @Param dir query string false "asc or desc"
 // @Param min query string false "min price"
 // @Param max query string false "max price"
-// @Success 200 {object} []advert_model.Advert Список объявлений
+// @Success 200 {object} [][]advert_model.AdvertWithOwner Список объявлений
 // @Failure 400 {object} transport.RespWriter Некооректные входные данные
 // @Failure 500 {object} transport.RespWriter Внутренняя ошибка сервера
 // @Router /advert/get [get]
@@ -147,5 +148,32 @@ func (handler *advertHandler) getAdverts(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	userID := uuid.Nil
+	u_id := r.Context().Value("user_id")
+	if u_id != nil {
+		handler.logger.Debug("user id", u_id)
+		userID = u_id.(uuid.UUID)
+	}
+
 	handler.logger.Debug("get adverts", slog.Any("query", queryParams))
+	list, err := handler.advertService.GetAdverts(r.Context(), queryParams, userID)
+
+	if err != nil {
+		handler.logger.Warn(err.Error())
+		transport.NewRespWriter(w, err.Error(), http.StatusInternalServerError, handler.logger)
+		return
+	}
+
+	handler.logger.Debug("marshal response", slog.Any("advert response", list))
+	resp, err := json.Marshal(list)
+
+	if err != nil {
+		handler.logger.Warn(err.Error())
+		transport.NewRespWriter(w, err.Error(), http.StatusInternalServerError, handler.logger)
+		return
+	}
+
+	w.Write(resp)
+	w.WriteHeader(http.StatusOK)
+	handler.logger.Info("successfull adverts get", slog.Any("advert", resp))
 }
