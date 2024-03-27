@@ -44,7 +44,10 @@ func (handler *advertHandler) Register(router *mux.Router) {
 // @Summary AddAdvert
 // @Security ApiKeyAuth
 // @Tags advert
-// @Description Добавление объявления в систему. Добавлять могут только авторизованные пользователи.
+// @Description Добавление объявления в систему. Добавлять объявления могут только авторизованные пользователи.
+// @Description Ограничение на загловок - от 3 до 250 символов; на текст объявления - от 3 до 1200 символов;
+// @Description Формат изображения - jpg и png. Размер изображения - 1080 в длину и 1920 в ширину.
+// @Description Ограничение цены - от 0 до 10 000 000
 // @ID add-advert
 // @Accept json
 // @Produce json
@@ -116,10 +119,13 @@ func (handler *advertHandler) addAdvert(w http.ResponseWriter, r *http.Request) 
 // @Summary getAdverts
 // @Tags advert
 // @Security ApiKeyAuth
-// @Description Получение списка объявлений. Возможность сортировки по дате и цене, также их направление.
-// @Description Возможность фильтрации по цене с мин и макс значениями.
-// @Description Сортировка задается параметрами URL: order и dir.
-// @Description Если не задать эти параметры, то будет сортировка по убыванию времени
+// @Description Получение списка объявлений. Возможность сортировки по дате и цене,
+// @Description также можно задать направление сортировки. Возможность фильтрации по цене с мин и макс значениями.
+// @Description Сортировка задается параметрами URL: order и dir. Если order=price, то сортировка будет по цене.
+// @Description Иначе - по дате добавлени. Если dir=asc, то сортировка будет по возрастанию. Иначе - по убыванию.
+// @Description Параметры min и max - ограничения на цену. Проверяется ограничения на то, что min <= max
+// @Description и не выходит за пределы ограничений по цене.
+// @Description Создаются страницы по 10 объявлений.
 // @ID get-adverts
 // @Accept json
 // @Produce json

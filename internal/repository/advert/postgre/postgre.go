@@ -80,7 +80,6 @@ func (repo *advertRepositoryPostgre) GetAdverts(ctx context.Context,
 			repo.logger.Error(err.Error())
 			return nil, err
 		}
-
 		repo.logger.Debug("append", slog.Any("row", advert))
 		res = append(res, advert)
 	}
